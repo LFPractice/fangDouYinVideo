@@ -10,15 +10,14 @@
 #import "VideCollectionViewCell.h"
 @interface VideoController ()<UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
 @property (nonatomic, strong) UICollectionView *videoCollectionView;
-@property (nonatomic, strong) UICollectionViewFlowLayout *flowLayout;
-@property (nonatomic, assign) BOOL isFullScreen;
+@property (nonatomic, assign) CGRect orignFrame;
+@property (nonatomic, strong) UIView *fatherView;
+@property (nonatomic, strong) NSIndexPath *currentIndexPath;
+
 @end
 
 @implementation VideoController
-{
-    CGRect orignFrame;
-    UIView *_fatherView;
-}
+
 #pragma mark - life circle
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -26,8 +25,6 @@
     self.view.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:self.videoCollectionView];
     
-    self.flowLayout.itemSize = CGSizeMake([UIScreen mainScreen].bounds.size.width-20, 300);
-//    self.view.transform = CGAffineTransformMakeRotation(M_PI_2);
 }
 #pragma mark - target-action
 #pragma mark - assist method
@@ -38,33 +35,18 @@
     _isFullScreen = isFullScreen;
     if (_isFullScreen) {
         // 全屏模式
-        orignFrame = self.videoCollectionView.frame;
-//        _fatherView = self.view;
+        self.orignFrame = self.videoCollectionView.frame;
+        self.fatherView = self.view;
         
         UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
         [keyWindow addSubview:self.videoCollectionView];
         
-        CGRect frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height+10);
+        CGRect frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
         [UIView animateWithDuration:0.5 animations:^{
-            if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
-                if ([UIDevice currentDevice].orientation == UIDeviceOrientationLandscapeLeft) {
-                    self.videoCollectionView.transform = CGAffineTransformMakeRotation(M_PI_2);
-                }
-                if ([UIDevice currentDevice].orientation == UIDeviceOrientationLandscapeRight) {
-                    self.videoCollectionView.transform = CGAffineTransformMakeRotation(-M_PI_2);
-                }
-                self.videoCollectionView.frame = frame;
-            } else {
-//                self.videoCollectionView.frame = [UIScreen mainScreen].bounds;
-                if ([UIDevice currentDevice].orientation == UIDeviceOrientationLandscapeLeft) {
-                    self.videoCollectionView.transform = CGAffineTransformMakeRotation(M_PI_2);
-                }
-                if ([UIDevice currentDevice].orientation == UIDeviceOrientationLandscapeRight) {
-                    self.videoCollectionView.transform = CGAffineTransformMakeRotation(-M_PI_2);
-                }
-                self.videoCollectionView.transform = CGAffineTransformMakeRotation(M_PI_2);
-                self.videoCollectionView.frame = frame;
-            }
+            
+            self.videoCollectionView.transform = CGAffineTransformMakeRotation(M_PI_2);
+            self.videoCollectionView.frame = frame;
+            
         } completion:^(BOOL finished) {
             
         }];
@@ -74,9 +56,9 @@
         [UIView animateWithDuration:0.5 animations:^{
             
             self.videoCollectionView.transform = CGAffineTransformIdentity;
-            self.videoCollectionView.frame = orignFrame;
+            self.videoCollectionView.frame = self.orignFrame;
             
-            [_fatherView addSubview:self.videoCollectionView];
+            [self.fatherView addSubview:self.videoCollectionView];
         } completion:^(BOOL finished) {
             
         }];
@@ -84,6 +66,10 @@
     }
     
     [self.videoCollectionView reloadData];
+    
+    [self.videoCollectionView layoutIfNeeded];
+    
+    [self.videoCollectionView scrollToItemAtIndexPath:self.currentIndexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:NO];
 }
 #pragma mark - delegate
 #pragma mark ------ UICollectionViewDataSource
@@ -92,12 +78,14 @@
 }
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     VideCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"VideCollectionViewCell" forIndexPath:indexPath];
+    cell.indexPath = indexPath;
     cell.isFullScreen = self.isFullScreen;
     [cell laySubviews];
     return cell;
 }
 #pragma mark ------ UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    self.currentIndexPath = indexPath;
     self.isFullScreen = !self.isFullScreen;
 }
 #pragma mark - private
@@ -110,13 +98,12 @@
         flowLayout.minimumLineSpacing = 0;
         flowLayout.minimumInteritemSpacing = 0;
         
-        self.flowLayout = flowLayout;
         _videoCollectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, 300) collectionViewLayout:flowLayout];
         _videoCollectionView.delegate = self;
         _videoCollectionView.dataSource = self;
         _videoCollectionView.showsHorizontalScrollIndicator = NO;
         _videoCollectionView.pagingEnabled = YES;
-        _videoCollectionView.backgroundColor = [UIColor redColor];
+        _videoCollectionView.backgroundColor = [UIColor clearColor];
         [_videoCollectionView registerClass:[VideCollectionViewCell class]
                  forCellWithReuseIdentifier:@"VideCollectionViewCell"];
     }
@@ -129,6 +116,10 @@
     }else {
         return CGSizeMake([UIScreen mainScreen].bounds.size.width, 300);
     }
+}
+
+- (BOOL)prefersStatusBarHidden {
+    return YES;
 }
 
 

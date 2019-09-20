@@ -30,6 +30,7 @@
 }
 - (void)btnClick {
     VideoController *videoVC = [[VideoController alloc]init];
+    videoVC.isFullScreen = YES;
     [self.navigationController pushViewController:videoVC animated:YES];
 }
 /*

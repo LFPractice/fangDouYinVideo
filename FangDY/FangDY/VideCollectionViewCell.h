@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface VideCollectionViewCell : UICollectionViewCell
 @property (nonatomic, assign) BOOL isFullScreen;
+@property (nonatomic, strong) NSIndexPath *indexPath;
 - (void)laySubviews;
 @end
 

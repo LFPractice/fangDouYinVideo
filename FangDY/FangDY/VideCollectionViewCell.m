@@ -39,6 +39,12 @@
     
 }
 
+- (void)setIsFullScreen:(BOOL)isFullScreen {
+    _isFullScreen = isFullScreen;
+    
+    self.label.text = [NSString stringWithFormat:@"hello world %ld",self.indexPath.row];
+}
+
 - (void)laySubviews {
     
     [self.centerView mas_makeConstraints:^(MASConstraintMaker *make) {
